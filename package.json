@@ -1,6 +1,6 @@
 {
   "name": "@ikuma-t/design-token",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "ikuma-t's design token",
   "keywords": [
     "design-system",
@@ -11,6 +11,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IkumaTadokoro/design-token.git"
+  },
   "main": "dist/tokens.js",
   "scripts": {
     "prepare": "simple-git-hooks",
