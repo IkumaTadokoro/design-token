@@ -19,15 +19,15 @@ jobs:
     environment: npm
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: pnpm/action-setup@v4
-      
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
-      
+          node-version: "20"
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Get package version
         id: package
         run: |
@@ -35,7 +35,7 @@ jobs:
           PACKAGE_NAME=$(jq -r '.name' package.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
-      
+
       - name: Check if tag exists
         id: tag-check
         run: |
@@ -44,23 +44,23 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Install latest npm
         if: steps.tag-check.outputs.exists == 'false'
         run: npm install -g npm@latest
-      
+
       - name: Install dependencies
         if: steps.tag-check.outputs.exists == 'false'
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build
         if: steps.tag-check.outputs.exists == 'false'
         run: pnpm run build
-      
+
       - name: Publish with provenance
         if: steps.tag-check.outputs.exists == 'false'
         run: pnpm publish --provenance --access public --no-git-checks
-      
+
       - name: Create GitHub Release
         id: create-release
         if: steps.tag-check.outputs.exists == 'false'
@@ -71,14 +71,14 @@ jobs:
           echo "url=$RELEASE_URL" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
-      
+
       - name: Comment on PR
         if: always() && steps.tag-check.outputs.exists == 'false'
         run: |
           if [ "${{ job.status }}" = "success" ]; then
             gh pr comment "${{ github.event.pull_request.number }}" \
               --body "✅ Release v${{ steps.package.outputs.version }} published successfully!
-          
+
           - npm: https://www.npmjs.com/package/${{ steps.package.outputs.name }}/v/${{ steps.package.outputs.version }}
           - GitHub: ${{ steps.create-release.outputs.url }}"
           else
