@@ -21,29 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Version bump
-        id: version
-        run: |
-          npm version "${{ github.event.inputs.version }}" --no-git-tag-version
       - uses: pnpm/action-setup@v4 # 追加
-        with:
-          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm" # 変更
 
       - name: Configure Git
         run: |
