@@ -19,9 +19,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4 # 追加
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "pnpm" # 変更
           registry-url: "https://registry.npmjs.org"
 
       - name: Get package version
@@ -47,15 +52,15 @@ jobs:
 
       - name: Install dependencies
         if: steps.tag-check.outputs.exists == 'false'
-        run: npm ci
+        run: pnpm install --frozen-lockfile # 変更
 
       - name: Build
         if: steps.tag-check.outputs.exists == 'false'
-        run: npm run build
+        run: pnpm run build # 変更
 
       - name: Publish with provenance
         if: steps.tag-check.outputs.exists == 'false'
-        run: npm publish --provenance --access public
+        run: pnpm publish --provenance --access public --no-git-checks # 変更
 
       - name: Create GitHub Release
         id: create-release
