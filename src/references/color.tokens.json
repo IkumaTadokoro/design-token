@@ -1,0 +1,11 @@
+{
+  "color": {
+    "purple": {
+      "50": {
+        "$value": "#9568C6",
+        "$type": "color",
+        "$description": "ZFR test token"
+      }
+    }
+  }
+}

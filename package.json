@@ -1,0 +1,43 @@
+{
+  "name": "@ikuma-t/design-token",
+  "version": "0.0.1",
+  "description": "ikuma-t's design token",
+  "keywords": [
+    "design-system",
+    "design-token"
+  ],
+  "license": "MIT",
+  "author": "IkumaTadokoro",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/tokens.js",
+  "scripts": {
+    "prepare": "simple-git-hooks",
+    "build": "style-dictionary build --config ./sd.config.json",
+    "lint": "oxlint --type-aware --type-check",
+    "lint:fix": "oxlint --type-aware --type-check --fix",
+    "fmt": "oxfmt"
+  },
+  "dependencies": {
+    "style-dictionary": "^5.1.1"
+  },
+  "devDependencies": {
+    "@release-it/conventional-changelog": "^10.0.4",
+    "changeloggithub": "^0.0.34",
+    "lint-staged": "^16.2.7",
+    "oxfmt": "^0.21.0",
+    "oxlint": "^1.36.0",
+    "oxlint-tsgolint": "^0.10.0",
+    "release-it": "^19.2.2",
+    "simple-git-hooks": "^2.13.1"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged",
+    "pre-push": "pnpm fmt"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "pnpm run lint"
+  },
+  "packageManager": "pnpm@10.14.0"
+}

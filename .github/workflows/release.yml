@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+  id-token: write # OIDC認証に必須
+  pull-requests: write
+
+jobs:
+  release:
+    if: |
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'Type: Release')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Get package version
+        id: package
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          PACKAGE_NAME=$(jq -r '.name' package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag-check
+        run: |
+          if git rev-parse "v${{ steps.package.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install latest npm
+        if: steps.tag-check.outputs.exists == 'false'
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        if: steps.tag-check.outputs.exists == 'false'
+        run: npm ci
+
+      - name: Build
+        if: steps.tag-check.outputs.exists == 'false'
+        run: npm run build
+
+      - name: Publish with provenance
+        if: steps.tag-check.outputs.exists == 'false'
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        id: create-release
+        if: steps.tag-check.outputs.exists == 'false'
+        run: |
+          RELEASE_URL=$(gh release create "v${{ steps.package.outputs.version }}" \
+            --title "v${{ steps.package.outputs.version }}" \
+            --notes "${{ github.event.pull_request.body }}")
+          echo "url=$RELEASE_URL" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Comment on PR
+        if: always() && steps.tag-check.outputs.exists == 'false'
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            gh pr comment "${{ github.event.pull_request.number }}" \
+              --body "✅ Release v${{ steps.package.outputs.version }} published successfully!
+
+          - npm: https://www.npmjs.com/package/${{ steps.package.outputs.name }}/v/${{ steps.package.outputs.version }}
+          - GitHub: ${{ steps.create-release.outputs.url }}"
+          else
+            gh pr comment "${{ github.event.pull_request.number }}" \
+              --body "❌ Release failed. Check workflow logs."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
